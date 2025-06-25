@@ -38,12 +38,14 @@ export async function POST(req: NextRequest) {
     console.log('🤖 Step 3: Sending data to OpenAI...');
     await new Promise((res) => setTimeout(res, 300));
 
-    const formattedExpenses = expenses
-      .slice(0, 20)
-      .map(
-        (e: any) =>
-          `${e.category || 'Unknown'} | ${e.amount || 0} | ${e.date || 'N/A'} | ${e.type || 'N/A'}`
-      );
+
+const formattedExpenses = expenses
+  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  .slice(0, 8)
+  .map(
+    (e: any) =>
+      `${e.category || 'Unknown'} | ${e.amount || 0} | ${e.date || 'N/A'} | ${e.type || 'N/A'}`
+  );
 
     const prompt = `You are a financial advisor AI. Based on the following expense data, generate 3 smart insights.
 
@@ -62,7 +64,7 @@ ${formattedExpenses.join('\n')}`;
     console.log('[🧠 Sending Prompt to OpenAI] Prompt length:', prompt.length);
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-3.5-turbo',
       messages: [{ role: 'user', content: prompt }],
       temperature: 0.7,
     });
