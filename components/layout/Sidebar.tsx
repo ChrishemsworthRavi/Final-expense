@@ -1,28 +1,39 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  LayoutDashboard, 
-  BarChart3, 
-  Receipt, 
-  Bell, 
-  CreditCard, 
+import {
+  LayoutDashboard,
+  BarChart3,
+  Receipt,
+  Bell,
+  CreditCard,
   Settings,
   Wallet,
   ChevronRight,
   Menu,
-  X
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import type { SectionKey } from '@/types/SectionKey'; 
+import type { SectionKey } from '@/types/SectionKey';
 
 interface SidebarProps {
-  activeSection: SectionKey;                        
-  setActiveSection: (section: SectionKey) => void;  
+  activeSection: SectionKey;
+  setActiveSection: (section: SectionKey) => void;
   isOpen: boolean;
   onToggle: () => void;
 }
+
+// Map each section to a route
+const sectionRoutes: Record<SectionKey, string> = {
+  dashboard: '/',
+  analytics: '/analytics',
+  'expense-list': '/expenses',
+  'bill-reminders': '/reminders',
+  subscriptions: '/subscriptions',
+  settings: '/settings',
+};
 
 const navigationItems: {
   id: SectionKey;
@@ -37,10 +48,17 @@ const navigationItems: {
   { id: 'settings', label: 'Settings', icon: Settings },
 ];
 
-export default function Sidebar({ activeSection, setActiveSection, isOpen, onToggle }: SidebarProps) {
+export default function Sidebar({
+  activeSection,
+  setActiveSection,
+  isOpen,
+  onToggle,
+}: SidebarProps) {
+  const router = useRouter();
+
   return (
     <>
-      {/* Toggle Button - Fixed position, adjusted to not overlap with header */}
+      {/* Toggle Button */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -51,10 +69,10 @@ export default function Sidebar({ activeSection, setActiveSection, isOpen, onTog
           onClick={onToggle}
           size="sm"
           className={cn(
-            "w-10 h-10 rounded-xl shadow-lg transition-all duration-300 border-0",
-            isOpen 
-              ? "bg-background/90 hover:bg-background text-foreground border border-border" 
-              : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white"
+            'w-10 h-10 rounded-xl shadow-lg transition-all duration-300 border-0',
+            isOpen
+              ? 'bg-background/90 hover:bg-background text-foreground border border-border'
+              : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white'
           )}
         >
           <motion.div
@@ -66,7 +84,7 @@ export default function Sidebar({ activeSection, setActiveSection, isOpen, onTog
         </Button>
       </motion.div>
 
-      {/* Backdrop for mobile */}
+      {/* Mobile backdrop */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -87,7 +105,7 @@ export default function Sidebar({ activeSection, setActiveSection, isOpen, onTog
             initial={{ x: -320 }}
             animate={{ x: 0 }}
             exit={{ x: -320 }}
-            transition={{ duration: 0.3, ease: "easeOut" }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
             className="fixed left-0 top-0 z-50 h-full w-80 bg-background/95 backdrop-blur-xl border-r border-border shadow-xl lg:shadow-2xl"
           >
             <div className="flex flex-col h-full">
@@ -125,31 +143,31 @@ export default function Sidebar({ activeSection, setActiveSection, isOpen, onTog
                       transition={{ delay: 0.1 + index * 0.05 }}
                       onClick={() => {
                         setActiveSection(item.id);
-                        // Close sidebar on mobile after selection
+                        router.push(sectionRoutes[item.id]);
                         if (window.innerWidth < 1024) {
                           onToggle();
                         }
                       }}
                       className={cn(
-                        "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden",
+                        'w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all duration-200 group relative overflow-hidden',
                         isActive
-                          ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                          ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg'
+                          : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                       )}
                     >
                       {isActive && (
                         <motion.div
                           layoutId="activeBackground"
                           className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600"
-                          transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                          transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
                         />
                       )}
-                      
+
                       <div className="relative z-10 flex items-center gap-3 flex-1">
                         <Icon className="w-5 h-5" />
                         <span className="font-medium">{item.label}</span>
                       </div>
-                      
+
                       {isActive && (
                         <motion.div
                           initial={{ opacity: 0, scale: 0 }}
