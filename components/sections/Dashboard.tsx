@@ -8,8 +8,18 @@ import {
   Calendar,
   ArrowUpRight,
   ArrowDownRight,
+  Trash2,
+  HelpCircle,
+  HeartPulse,
+  ShoppingBag,
+  Receipt,
+  Book,
+  Film,
+  Car,
+  Utensils,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '../ui/button';
 
 interface Expense {
   id: number;
@@ -20,8 +30,38 @@ interface Expense {
   type: 'income' | 'expense';
 }
 
+
 interface Props {
   expenses: Expense[];
+}
+
+function getCategoryIcon(category: string) {
+  const icons: Record<string, React.ReactNode> = {
+    Food: <Utensils className="w-6 h-6" />,
+    Transport: <Car className="w-6 h-6" />,
+    Entertainment: <Film className="w-6 h-6" />,
+    Education: <Book className="w-6 h-6" />,
+    Shopping: <ShoppingBag className="w-6 h-6" />,
+    Bills: <Receipt className="w-6 h-6" />,
+    Healthcare: <HeartPulse className="w-6 h-6" />,
+    Income: <DollarSign className="w-6 h-6" />,
+  };
+
+  return icons[category] || <HelpCircle className="w-6 h-6" />;
+}
+
+function getCategoryColor(category: string) {
+  const colors: Record<string, string> = {
+    Food: 'bg-pink-100 text-pink-600',
+    Transport: 'bg-yellow-100 text-yellow-700',
+    Entertainment: 'bg-purple-100 text-purple-600',
+    Education: 'bg-blue-100 text-blue-600',
+    Shopping: 'bg-orange-100 text-orange-600',
+    Bills: 'bg-indigo-100 text-indigo-600',
+    Healthcare: 'bg-rose-100 text-rose-600',
+    Income: 'bg-green-100 text-green-600',
+  };
+  return colors[category] || 'bg-gray-100 text-gray-600';
 }
 
 export default function Dashboard({ expenses }: Props) {
@@ -112,46 +152,65 @@ export default function Dashboard({ expenses }: Props) {
             <CardTitle className="text-xl font-semibold text-gray-900">Recent Transactions</CardTitle>
             <p className="text-gray-600">Your last 10 expenses and income</p>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {last10.map((expense, index) => (
-                <motion.div
-                  key={expense.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
-                  className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-gray-50 to-white border border-gray-100 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-center gap-4">
-                    <div
-                      className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                        expense.type === 'income'
-                          ? 'bg-emerald-100 text-emerald-600'
-                          : 'bg-red-100 text-red-600'
-                      }`}
-                    >
-                      {expense.type === 'income' ? <ArrowUpRight className="w-5 h-5" /> : <ArrowDownRight className="w-5 h-5" />}
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-900">{expense.purpose}</h3>
-                      <p className="text-sm text-gray-500">
-                        {expense.category} • {expense.date}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p
-                      className={`text-lg font-bold ${
-                        expense.type === 'income' ? 'text-emerald-600' : 'text-red-600'
-                      }`}
-                    >
-                      {expense.type === 'income' ? '+' : '-'}${expense.amount.toFixed(2)}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </CardContent>
+          <CardContent className="space-y-2">
+  {last10.map((expense, index) => {
+    const categoryIcon = getCategoryIcon(expense.category);
+    return (
+      <motion.div
+        key={expense.id}
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.3, delay: 0.6 + index * 0.05 }}
+        whileHover={{ scale: 1.01 }}
+        className="flex items-center justify-between border rounded-lg px-4 py-3 bg-white dark:bg-muted/40 transition-all group"
+      >
+        {/* Purpose + Icon */}
+        <div className="flex items-center gap-3 w-1/4 truncate">
+          <div className="w-10 h-10 rounded-full flex items-center justify-center bg-muted shrink-0">
+            {categoryIcon}
+          </div>
+          <div className="text-sm font-medium truncate">{expense.purpose}</div>
+        </div>
+
+        {/* Category */}
+        <div className="w-1/5 truncate">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getCategoryColor(expense.category)}`}>
+            {expense.category}
+          </span>
+        </div>
+
+        {/* Date */}
+        <div className="text-sm text-muted-foreground w-1/5 truncate">
+          {expense.date}
+        </div>
+
+        {/* Amount */}
+        <div className={`text-sm font-semibold w-1/5 text-right ${expense.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>
+          {expense.type === 'income' ? (
+            <ArrowUpRight className="inline-block w-4 h-4 mr-1" />
+          ) : (
+            <ArrowDownRight className="inline-block w-4 h-4 mr-1" />
+          )}
+          ${parseFloat(String(expense.amount)).toFixed(2)}
+        </div>
+
+        {/* Delete (optional) */}
+        <div className="w-[30px] text-right">
+          <Button
+            size="icon"
+            variant="ghost"
+            onClick={() => console.log("Implement delete if needed")}
+            className="opacity-0 group-hover:opacity-100 transition-opacity"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
+        </div>
+      </motion.div>
+    );
+  })}
+</CardContent>
+
+
         </Card>
       </motion.div>
     </div>

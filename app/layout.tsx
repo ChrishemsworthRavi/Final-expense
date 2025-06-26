@@ -1,26 +1,17 @@
+// app/layout.tsx
 import './globals.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import Providers from './providers';
+import ClientLayout from './client-layout';
 
-const inter = Inter({ subsets: ['latin'] });
-
-export const metadata: Metadata = {
-  title: 'ExpenseTracker - Manage Your Finances',
-  description: 'A beautiful expense tracking application built with Next.js',
+export const metadata = {
+  title: 'Expense Tracker',
+  description: 'Manage your finances smartly',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
-        <Providers>
-          {children}
-        </Providers>
+    <html lang="en">
+      <body>
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

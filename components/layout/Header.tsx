@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Bell, Search, Moon, Sun, User, Settings } from 'lucide-react';
+import { Bell, Search, Moon, Sun, User, Settings, Menu } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,10 +17,10 @@ import {
 import { Badge } from '@/components/ui/badge';
 
 interface HeaderProps {
-  sidebarOpen: boolean;
+  onToggle: () => void;
 }
 
-export default function Header({ sidebarOpen }: HeaderProps) {
+export default function Header({ onToggle }: HeaderProps) {
   const { theme, setTheme } = useTheme();
 
   return (
@@ -28,13 +28,24 @@ export default function Header({ sidebarOpen }: HeaderProps) {
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className={`sticky top-0 z-30 border-b bg-background/80 backdrop-blur-xl transition-all duration-300 ${
-        sidebarOpen ? 'lg:ml-80' : 'lg:ml-0'
-      }`}
+      className="border-b bg-background/80 backdrop-blur-xl transition-all duration-300"
     >
-      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8 ml-10">
-        {/* Left side - Search */}
-        <div className="flex items-center gap-4 flex-1 max-w-md ml-16 lg:ml-0">
+      <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+        {/* Left - Mobile Toggle + Search */}
+        <div className="flex items-center gap-3 flex-1 max-w-md">
+          {/* Toggle only on mobile */}
+          <div className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggle}
+              className="w-9 h-9 rounded-full"
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Search bar */}
           <div className="relative w-full">
             <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
             <Input
@@ -44,9 +55,8 @@ export default function Header({ sidebarOpen }: HeaderProps) {
           </div>
         </div>
 
-        {/* Right side - Actions */}
+        {/* Right - Actions */}
         <div className="flex items-center gap-2">
-          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="sm"
@@ -58,12 +68,11 @@ export default function Header({ sidebarOpen }: HeaderProps) {
             <span className="sr-only">Toggle theme</span>
           </Button>
 
-          {/* Notifications */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="w-9 h-9 rounded-full relative">
                 <Bell className="h-4 w-4" />
-                <Badge className="absolute -top-1 -right-1 w-5 h-5 p-1.5  text-xs bg-red-500 hover:bg-red-500">
+                <Badge className="absolute -top-1 -right-1 w-5 h-5 p-1.5 text-xs bg-red-500 hover:bg-red-500">
                   3
                 </Badge>
               </Button>
@@ -72,30 +81,7 @@ export default function Header({ sidebarOpen }: HeaderProps) {
               <DropdownMenuLabel>Notifications</DropdownMenuLabel>
               <DropdownMenuSeparator />
               <div className="space-y-2 p-2">
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Bill Reminder</p>
-                    <p className="text-xs text-muted-foreground">Electric bill due in 3 days</p>
-                    <p className="text-xs text-muted-foreground">2 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Budget Alert</p>
-                    <p className="text-xs text-muted-foreground">You've used 80% of your monthly budget</p>
-                    <p className="text-xs text-muted-foreground">5 hours ago</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                  <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">Expense Added</p>
-                    <p className="text-xs text-muted-foreground">New expense: Grocery Shopping - $124.50</p>
-                    <p className="text-xs text-muted-foreground">1 day ago</p>
-                  </div>
-                </div>
+                {/* Notification placeholders */}
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="text-center justify-center">
@@ -104,12 +90,11 @@ export default function Header({ sidebarOpen }: HeaderProps) {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Profile Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full">
                 <Avatar className="h-9 w-9">
-                  <AvatarImage src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&dpr=2" alt="Profile" />
+                  <AvatarImage src="https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg" alt="Profile" />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
               </Button>
@@ -118,9 +103,7 @@ export default function Header({ sidebarOpen }: HeaderProps) {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">John Doe</p>
-                  <p className="text-xs leading-none text-muted-foreground">
-                    john.doe@example.com
-                  </p>
+                  <p className="text-xs leading-none text-muted-foreground">john.doe@example.com</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -133,9 +116,7 @@ export default function Header({ sidebarOpen }: HeaderProps) {
                 <span>Settings</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
-                Log out
-              </DropdownMenuItem>
+              <DropdownMenuItem>Log out</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
