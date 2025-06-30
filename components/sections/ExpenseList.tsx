@@ -28,6 +28,7 @@ type Expense = {
   date: string;
   description?: string;
   type: 'expense' | 'income';
+  user_id?: string;  // Add this
 };
 
 const categories = [
@@ -121,16 +122,28 @@ export default function ExpenseList() {
     },
   });
 
-  const handleAddExpense = () => {
-    if (newExpense.purpose && newExpense.amount && newExpense.category && newExpense.date) {
-      addMutation.mutate({
-        ...newExpense,
-        amount: parseFloat(String(newExpense.amount))
-      });
+const handleAddExpense = async () => {
+  if (newExpense.purpose && newExpense.amount && newExpense.category && newExpense.date) {
+    const {
+      data: { user },
+      error: userError
+    } = await supabase.auth.getUser();
 
-      setNewExpense({ purpose: '', amount: 0, category: '', date: '', description: '', type: 'expense' });
+    if (userError || !user) {
+      console.error('User not authenticated:', userError);
+      return;
     }
-  };
+
+    addMutation.mutate({
+      ...newExpense,
+      amount: parseFloat(String(newExpense.amount)),
+      user_id: user.id  // 👈 Add user_id here
+    });
+
+    setNewExpense({ purpose: '', amount: 0, category: '', date: '', description: '', type: 'expense' });
+  }
+};
+
 
   return (
     <div className="space-y-8">
@@ -228,7 +241,8 @@ export default function ExpenseList() {
                   </div>
 
                   {/* Date */}
-                  <div className="text-sm text-muted-foreground w-1/5">{expense.date}</div>
+<div className="text-sm text-muted-foreground w-1/5 hidden md:block">{expense.date}</div>
+
 
                   {/* Amount */}
                   <div className={`text-sm font-bold w-1/5 ${expense.type === 'income' ? 'text-green-600' : 'text-red-600'}`}>

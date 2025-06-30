@@ -57,29 +57,40 @@ export default function BillReminders() {
     queryFn: fetchBills,
   });
 
-  const addBillMutation = useMutation({
-    mutationFn: async () => {
-      const daysLeft = Math.ceil((new Date(newBill.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      const status = daysLeft < 0 ? 'overdue' : daysLeft <= 7 ? 'due-soon' : 'upcoming';
+ const addBillMutation = useMutation({
+  mutationFn: async () => {
+    const daysLeft = Math.ceil(
+      (new Date(newBill.dueDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+    );
+    const status = daysLeft < 0 ? 'overdue' : daysLeft <= 7 ? 'due-soon' : 'upcoming';
 
-      const { error } = await supabase.from('bills').insert([
-        {
-          name: newBill.name,
-          amount: parseFloat(newBill.amount),
-          due_date: newBill.dueDate,
-          frequency: newBill.frequency,
-          status,
-        },
-      ]);
+    // Get current user ID
+    const { data: { user } } = await supabase.auth.getUser();
 
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['bills'] });
-      setNewBill({ name: '', amount: '', dueDate: '', frequency: 'Monthly' });
-      setIsAddModalOpen(false);
-    },
-  });
+    if (!user) {
+      throw new Error('No authenticated user found');
+    }
+
+    const { error } = await supabase.from('bills').insert([
+      {
+        name: newBill.name,
+        amount: parseFloat(newBill.amount),
+        due_date: newBill.dueDate,
+        frequency: newBill.frequency,
+        status,
+        user_id: user.id, // 👈 include user_id to satisfy RLS
+      },
+    ]);
+
+    if (error) throw error;
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['bills'] });
+    setNewBill({ name: '', amount: '', dueDate: '', frequency: 'Monthly' });
+    setIsAddModalOpen(false);
+  },
+});
+
 
   const deleteBill = async (id: number) => {
     const { error } = await supabase.from('bills').delete().eq('id', id);
@@ -242,7 +253,7 @@ export default function BillReminders() {
                           {bill.status === 'overdue' ? 'Overdue' : bill.status === 'due-soon' ? 'Due Soon' : 'Upcoming'}
                         </Badge>
                       </div>
-                      <p className="text-sm text-gray-500">
+                      <p className="text-sm text-gray-500 ">
                         Due: {bill.due_date} • {bill.frequency} •{' '}
                         {bill.daysLeft > 0
                           ? `${bill.daysLeft} days left`

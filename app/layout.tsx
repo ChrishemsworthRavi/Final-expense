@@ -1,6 +1,5 @@
-// app/layout.tsx
 import './globals.css';
-import ClientLayout from './client-layout';
+import QueryProvider from '@/app/query-provider';
 
 export const metadata = {
   title: 'Expense Tracker',
@@ -11,7 +10,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
-        <ClientLayout>{children}</ClientLayout>
+        <QueryProvider>
+          {children}
+        </QueryProvider>
       </body>
     </html>
   );

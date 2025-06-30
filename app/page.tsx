@@ -1,20 +1,14 @@
-'use client';
-import { useQuery } from '@tanstack/react-query';
-import Dashboard from '@/components/sections/Dashboard';
-import { supabase } from '@/lib/supabaseClient';
+"use client";
 
-export default function Home() {
-  const { data: expenses = [], isLoading, isError } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: async () => {
-      const { data, error } = await supabase.from('expenses').select('*');
-      if (error) throw error;
-      return data;
-    },
-  });
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error loading expenses</div>;
+export default function HomePage() {
+  const router = useRouter();
 
-  return <Dashboard expenses={expenses} />;
+  useEffect(() => {
+    router.push("/dashboard");
+  }, [router]);
+
+  return <div className="p-8 text-gray-500">Redirecting to dashboard...</div>;
 }

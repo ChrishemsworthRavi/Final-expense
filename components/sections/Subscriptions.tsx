@@ -29,13 +29,31 @@ type Subscription = {
   id?: number;
   name: string;
   amount: number;
-  renewalDate: string; // or `Date` depending on your schema
+  billing: 'monthly' | 'yearly';  // Add this
+  next_billing: string;           // Instead of renewalDate
   category: string;
+  status: 'active' | 'paused';
+  user_id?: string;               // Supabase will need this for RLS
 };
 const addSubscription = async (subscription: Subscription): Promise<void> => {
-  const { error } = await supabase.from('subscriptions').insert(subscription);
-  if (error) throw new Error(error.message);
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError) throw new Error(userError.message);
+  if (!user) throw new Error('No authenticated user found');
+
+  const { error } = await supabase.from('subscriptions').insert([
+    {
+      ...subscription,
+      user_id: user.id,  // Satisfies RLS
+    }
+  ]);
+
+  if (error) {
+    console.error('Insert error details:', error);
+    throw new Error(error.message);
+  }
 };
+
+
 const updateSubscription = async ({ id, status }: { id: number; status: string }) => {
   const { error } = await supabase.from('subscriptions').update({ status }).eq('id', id);
   if (error) throw new Error(error.message);
@@ -171,11 +189,14 @@ export default function Subscriptions() {
               </div>
               <Button
   onClick={() =>
-    mutation.mutate({
-      ...newSubscription,
-      amount: parseFloat(newSubscription.amount),
-      renewalDate: newSubscription.next_billing, // use an appropriate date
-    })
+mutation.mutate({
+  name: newSubscription.name,
+  amount: parseFloat(newSubscription.amount),
+  billing: newSubscription.billing as 'monthly' | 'yearly',
+  next_billing: newSubscription.next_billing,
+  category: newSubscription.category,
+  status: newSubscription.status as 'active' | 'paused',
+})
   }
 >
   Add Subscription
