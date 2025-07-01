@@ -19,6 +19,7 @@ const LoginForm = () => {
     confirmPassword: ''
   });
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,6 +32,7 @@ const LoginForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setSuccess(null);
     setLoading(true);
 
     try {
@@ -51,13 +53,13 @@ const LoginForm = () => {
         });
         if (error) throw error;
 
-        // OPTIONAL: insert additional user data to `profiles` table
-        // await supabase.from('profiles').insert({
-        //   id: data.user?.id,
-        //   email: formData.email
-        // });
-
-        router.push('/dashboard');
+        setSuccess("Account created successfully. Please sign in!");
+        setActiveTab('signin');
+        setFormData({
+          email: formData.email,
+          password: '',
+          confirmPassword: ''
+        });
       }
     } catch (err: any) {
       setError(err.message);
@@ -107,7 +109,11 @@ const LoginForm = () => {
 
               <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
                 <button
-                  onClick={() => setActiveTab('signin')}
+                  onClick={() => {
+                    setActiveTab('signin');
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                     activeTab === 'signin'
                       ? 'bg-white text-gray-900 shadow-sm'
@@ -117,7 +123,11 @@ const LoginForm = () => {
                   Sign In
                 </button>
                 <button
-                  onClick={() => setActiveTab('signup')}
+                  onClick={() => {
+                    setActiveTab('signup');
+                    setError(null);
+                    setSuccess(null);
+                  }}
                   className={`flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
                     activeTab === 'signup'
                       ? 'bg-white text-gray-900 shadow-sm'
@@ -130,6 +140,7 @@ const LoginForm = () => {
             </div>
 
             {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            {success && <p className="text-green-500 text-sm mb-4">{success}</p>}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
